@@ -12,4 +12,4 @@ def height(time):
 if __name__ == '__main__':
 
     time = float(input('Please input a time in seconds: '))
-    print("A satlite that orbits in time {0} is has altitude {1:.3e}m".format(time, height(time)))
+    print("A satellite that orbits in time {0} is has altitude {1:.3e}m".format(time, height(time)))
