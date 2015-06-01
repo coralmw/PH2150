@@ -51,3 +51,8 @@ def pi(n):
     ypoints = np.sqrt(1 - xpoints**2)
     points = [np.array(v) for v in zip(xpoints, ypoints)]
     return pathlen(points)
+
+for power in range(11):
+    iterations = 2**power
+    approxpi = pi(iterations)
+    print('error with {} iterations is {}'.format(iterations, abs(np.pi - approxpi)))

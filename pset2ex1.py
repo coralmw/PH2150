@@ -11,3 +11,4 @@ for e in P30:  # really
 
 if __name__ == '__main__':
     print(len(Elems))
+    print(Elems[22])
