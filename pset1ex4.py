@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     try:
         # also handels non-int input
-        height, time = [float(n) for n in sys.argv[1:]]
+        height, time = [float(n) for n in input('Enter the height and time, space seperated: ').split()]
     except ValueError:
         print('Not a number. Usage: pset1ex4.py HEIGHT TIME')
         sys.exit()
