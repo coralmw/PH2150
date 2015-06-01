@@ -42,3 +42,9 @@ n2 = timeit.timeit('functional_path_length(xs, ys)', setup='from __main__ import
 
 print('tom', n1, 'will', n2)
 '''
+
+def pi(n):
+    xpoints = np.linspace(-1, 1, n)
+    ypoints = np.sqrt(1-xpoints**2)
+    points = [np.array(v) for v in zip(xpoints, ypoints)]
+    return pathlen(points)
