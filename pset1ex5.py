@@ -7,7 +7,7 @@ R = 6371e3
 
 
 def height(time):
-    orbitRadius = (G*M*time**2/(4*np.pi**2)) ** (1./3)
+    orbitRadius = (G * M * time**2 / (4 * np.pi**2)) ** (1. / 3)
     return orbitRadius - R
 
 

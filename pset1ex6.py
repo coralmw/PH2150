@@ -7,7 +7,7 @@ FirstLaw = """In all cases in which work is produced by the agency of heat,
 
 thermo.write(FirstLaw)
 
-#This is caomment bro
+# This is caomment bro
 thermo.seek(0)
 ret = "The sixth word of this statment of the first law of thermodynamics is {}"
 print(ret.format(thermo.read().split()[5]))

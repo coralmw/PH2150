@@ -5,7 +5,8 @@ import math
 import sys
 import cProfile
 
-sys.setrecursionlimit( sys.getrecursionlimit()*10 )
+sys.setrecursionlimit(sys.getrecursionlimit() * 10)
+
 
 def pathlen(points):
     length = 0
@@ -13,18 +14,19 @@ def pathlen(points):
         length += norm(points[i] - point)
     return length
 
+
 def pathlen_xys(xs, ys):
     return pathlen([np.array(v) for v in zip(xs, ys)])
 
 
 # recursive version of the function to calculate a path length
-def functional_path_length(xs, ys, x2 = False, y2 = False):
-	x2 = x2 if x2 else xs[0]
-	y2 = y2 if y2 else ys[0]
-	if len(xs) > 0:
-		return math.sqrt((xs[0]-x2)**2 + (ys[0]-y2)**2) + functional_path_length(xs[1:], ys[1:], xs[0], ys[0])
-	else:
-		return 0
+def functional_path_length(xs, ys, x2=False, y2=False):
+    x2 = x2 if x2 else xs[0]
+    y2 = y2 if y2 else ys[0]
+    if len(xs) > 0:
+        return math.sqrt((xs[0] - x2)**2 + (ys[0] - y2)**2) + functional_path_length(xs[1:], ys[1:], xs[0], ys[0])
+    else:
+        return 0
 
 
 xsn = np.random.normal(size=5000)
@@ -43,8 +45,9 @@ n2 = timeit.timeit('functional_path_length(xs, ys)', setup='from __main__ import
 print('tom', n1, 'will', n2)
 '''
 
+
 def pi(n):
     xpoints = np.linspace(-1, 1, n)
-    ypoints = np.sqrt(1-xpoints**2)
+    ypoints = np.sqrt(1 - xpoints**2)
     points = [np.array(v) for v in zip(xpoints, ypoints)]
     return pathlen(points)
