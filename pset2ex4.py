@@ -9,7 +9,12 @@ sys.setrecursionlimit(sys.getrecursionlimit() * 10)
 
 
 def pathlen(points):
-    length = 0
+    """Finds the length of a line connecting the given points.
+
+    points: [numpy vector, numpy vector, ...]
+    returns: float of the length of the connecting path.
+    """
+    length = 0.
     for i, point in enumerate(points[1:]):
         length += norm(points[i] - point)
     return length

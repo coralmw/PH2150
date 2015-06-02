@@ -12,10 +12,6 @@ def distance(height, time):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) != 3:
-        print('Usage: pset1ex4.py HEIGHT TIME')
-        sys.exit()
-
     try:
         # also handels non-int input
         height, time = [float(n) for n in input(
