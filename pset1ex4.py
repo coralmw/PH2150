@@ -13,7 +13,7 @@ def distance(height, time):
 if __name__ == '__main__':
 
     try:
-        # also handels non-int input
+        # also handels non-int input, by ValueError
         height, time = [float(n) for n in input(
             'Enter the height and time, space seperated: ').split()]
     except ValueError:
