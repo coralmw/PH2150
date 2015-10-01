@@ -7,39 +7,52 @@ from functools import partial
 # omg this would be really easy in a languade with partial evaluation
 
 # factory function
-class f_adder(np.ndarray):
+class f_adder(object):
 
     # index needs to go first so that it can be positionally indexed
     # when partially evaulated
-    def __init__(self, index, multiplier, vector):
+    def __init__(self, vector, multiplier, x_axis, index):
         self.m = multiplier
         self.v = vector
         self.i = index
 
-    def __radd__(self, array):
+    def __call__(self, array):
         print(type(array))
-        return array + self.v(array)*self.m(self.i)
+        array += self.v(array)*self.m(self.i)
 
+
+b_func = partial(f_adder, np.sin)
+a_func = partial(f_adder, np.cos)
 
 def f_series(n, a_func, b_func, l=1000):
-    arr = np.zeros(l)
-    print(type(arr))
-    for i in range(n):
-        arr += a_func(i)
-        arr += b_func(i)
-    return arr
+    x = np.linspace(-np.pi, np.pi, l)
+    L = 2*np.pi
 
+    arr = a_func(0) / 2
+    for i in range(1, n+1):
+        trigmult = i*np.pi/L
+        arr += a_func(i) * np.cos(trigmult*x)
+        arr += b_func(i) * np.sin(trigmult*x)
+    return x, arr
 
 def squ_wave(n, l=1000):
-    b_func = partial(f_adder,
-                     multiplier=lambda i: 2 / (i * np.pi) if i%2 else 0,
-                     vector=np.sin)
-
-    a_func = partial(f_adder,
-                     multiplier=lambda i: 0,
-                     vector=np.cos)
-
+    x = np.linspace(-np.pi, np.pi, l)
+    b_func = lambda i: 4/np.pi * (1/i if i%2==1 else 0)
+    a_func = lambda i: 0
     return f_series(n, a_func, b_func, l)
 
-plt.plot(squ_wave(1))
+def squ_w(x, nmax):
+    L = 2*np.pi
+    v = 0
+    for n in range(1, nmax):
+        if n%2 == 1:
+            v += np.sin(n*np.pi*x/L)/n
+    return v*4/np.pi
+
+
+
+x = np.linspace(-np.pi, 3*np.pi, 1000)
+v = [squ_w(xp, 1000) for xp in x]
+
+plt.plot(x, v)
 plt.show()
