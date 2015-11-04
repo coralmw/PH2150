@@ -6,6 +6,22 @@ The following example traces the movement of a charged particle under the influe
 magnetic fields. You can edit the program to change the components of the fields to see their effect on
 the trajectory.
 """
+
+class Electron(object):
+
+    def __init__(self, P, V, m, q):
+        self.position = P
+        self.velocity = V
+        self.mass = m
+        self.charge = q
+
+    def update(self, P, V):
+        self.position += P
+        self.velocity += V
+
+    def statecopy(self):
+        return self.position.copy(), self.velocity.copy()
+
 # nupmy gives inaccurate results unless 100x the timepoints taken
 # float64 no change
 # 0 -> 0. no change
@@ -23,14 +39,17 @@ dt = 0.0001
 Peuler = []
 E, B, P, V = [vec.copy() for vec in (Ei, Bi, Pi, Vi)]
 
-def dP(P, V, E=E, B=E, q=q, dt=dt):
-    F = q * (E + np.cross(V, B))
-    V += F/m * dt # Acceleration = F/m; dv = a.dt
-    return V*dt
+particle = Electron(P, V, m, q)
+
+def Iterate(particle, E=E, B=E, dt=dt):
+    F = particle.charge * (E + np.cross(particle.velocity, B))
+    dv = F/particle.mass * dt # Acceleration = F/m; dv = a.dt
+    dp = (V+dv)*dt
+    return dp, dv
 
 while t < T: # trace path until time reaches value e.g. 10
-    P = dP(P, V)
-    Peuler.append(P.copy())
+    particle.update( *Iterate(particle) )
+    Peuler.append(particle.statecopy())
     t += dt
 
 Prk = []
@@ -38,8 +57,15 @@ E, B, P, V = [vec.copy() for vec in (Ei, Bi, Pi, Vi)]
 t = 0.
 
 while t < T: # trace path until time reaches value e.g. 10
-    k1 = dP(P, V)
-    k2 = dP(P + k1/2, V)
+    firstorderUpdateParticle = Electron(*[start+update for start, update in
+                                        zip(particle.statecopy(), Iterate(*particle))]
+                                        particle.mass,
+                                        particle.charge)
+                                        
+    leftSecondUpdateParticle = Electron(*[start+update for start, update in
+                                        zip(particle.statecopy(), Iterate(particle))]
+                                        particle.mass,
+                                        particle.charge)
     k3 = dP(P + k2/2, V)
     k4 = dP(P + k3/2, V)
     P = P + k1/6. + k2/3. + k3/3. + k4/6.
