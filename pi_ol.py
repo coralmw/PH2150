@@ -1,0 +1,1 @@
+(lambda __g: [[[(plt.plot(xaxis, [np.sqrt((6 * sum([(1.0 / (n ** 2)) for __g['n'] in range(1, x)]))) for __g['x'] in xaxis]), (plt.axhline(np.pi, color='r'), (plt.show(), None)[1])[1])[1] for __g['xaxis'] in [(range(1, 50))]][0] for __g['plt'] in [(__import__('matplotlib.pyplot', __g, __g).pyplot)]][0] for __g['np'] in [(__import__('numpy', __g, __g))]][0])(globals())

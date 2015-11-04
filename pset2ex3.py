@@ -1,6 +1,6 @@
 import numpy as np
-from numpy.linalg import dot, cross, norm
-
+from numpy import dot, cross
+from numpy.linalg import norm
 
 def area(x1, x2, y1, y2):
     dx = np.abs(x1 - x2)

@@ -1,58 +1,70 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
 from functools import partial
 
-# we use the f_adder, but partially evaluate it
+def f_series(x, nmax, L=2*np.pi, a_func=lambda n: 0, b_func=lambda n: 0):
+    '''
+    returns a numpy array of the f summation over the x-array.
 
-# omg this would be really easy in a languade with partial evaluation
+    x: numpy array, x-points
+    L: x-range
+    a,b_func: functions that evaluate to the coeff
+    '''
+    v = np.zeros_like(x) + a_func(0)/2
+    for n in range(1, nmax+1):
+        v += np.cos(n*np.pi*x/L)*a_func(n)
+        v += np.sin(n*np.pi*x/L)*b_func(n)
+    return v
 
-# factory function
-class f_adder(object):
+# partailly evaluated fuctions for each kind of wave
+square = partial(f_series,
+                 a_func=lambda n: 0, # lambda funcs for the an bn
+                 b_func=lambda n: 4/(np.pi*n) if n%2==1 else 0
+                )
 
-    # index needs to go first so that it can be positionally indexed
-    # when partially evaulated
-    def __init__(self, vector, multiplier, x_axis, index):
-        self.m = multiplier
-        self.v = vector
-        self.i = index
+saw = partial(f_series,
+              a_func=lambda n: 0 if n>0 else 1,
+              b_func=lambda n: np.pi * (-2/(np.pi*n))
+             )
 
-    def __call__(self, array):
-        print(type(array))
-        array += self.v(array)*self.m(self.i)
+# 1000 points over the range
+x = np.linspace(0, 2*np.pi, 1000)
 
+fig, (squplt, triplot) = plt.subplots(2, 1)
 
-b_func = partial(f_adder, np.sin)
-a_func = partial(f_adder, np.cos)
+# plot the levels of iteration for each f(x)
+labelstring = "n={}"
+for n in [9, 99, 999]:
+    squplt.plot(x, square(x, n, L=np.pi), label=labelstring.format(n))
+    triplot.plot(x, saw(x, n, L=np.pi/2), label=labelstring.format(n))
 
-def f_series(n, a_func, b_func, l=1000):
-    x = np.linspace(-np.pi, np.pi, l)
-    L = 2*np.pi
+# set the xlims slightly larger to make room for the label
+for ax in [squplt, triplot]:
+    ax.set_xlim(0, 2*np.pi+2)
 
-    arr = a_func(0) / 2
-    for i in range(1, n+1):
-        trigmult = i*np.pi/L
-        arr += a_func(i) * np.cos(trigmult*x)
-        arr += b_func(i) * np.sin(trigmult*x)
-    return x, arr
+squplt.legend()
+triplot.legend()
 
-def squ_wave(n, l=1000):
-    x = np.linspace(-np.pi, np.pi, l)
-    b_func = lambda i: 4/np.pi * (1/i if i%2==1 else 0)
-    a_func = lambda i: 0
-    return f_series(n, a_func, b_func, l)
+plt.show()
 
-def squ_w(x, nmax):
-    L = 2*np.pi
-    v = 0
-    for n in range(1, nmax):
-        if n%2 == 1:
-            v += np.sin(n*np.pi*x/L)/n
-    return v*4/np.pi
+# make the animation figure
+fig = plt.figure()
+ax = plt.axes(xlim=(0, 2*np.pi), ylim=(-2, 2))
+line, = ax.plot([], [], 'r-')
 
+def init():
+    print(0)
+    line.set_data([], [])
+    return line,
 
+def animate(i):
+    print(i)
+    line.set_data(x, square(x, i, L=np.pi))
+    ax.set_title('n={}'.format(i))
+    return line,
 
-x = np.linspace(-np.pi, 3*np.pi, 1000)
-v = [squ_w(xp, 1000) for xp in x]
-
-plt.plot(x, v)
+anim = animation.FuncAnimation(fig, animate, init_func=init,
+                               frames=50, interval=20, blit=False) #bilt turned off as it crashes on OSX
 plt.show()
