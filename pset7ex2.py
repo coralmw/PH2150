@@ -19,7 +19,7 @@ m = 2.0 # Mass of the particle
 q = 5.0 # Charge
 t = 0.0
 T = 10
-dt = 0.0001
+dt = 0.01
 
 Peuler = []
 E, B, P, V = [vec.copy() for vec in (Ei, Bi, Pi, Vi)]
@@ -50,20 +50,21 @@ while t < T: # trace path until time reaches value e.g. 10
     dp1 = (V+dv1) * dt # just using this gives the Euler method
 
     # find the force at the first midpoint.
-    f2 = ForceAtVelocity(V+dv1)
+    f2 = ForceAtVelocity(V+(dv1/2))
     a2 = f2 / m
-    dv2 = a2 * (dt/2.)
-    dp2 = (V+dv2) * dt/2.
+    dv2 = a2 * dt
+    dp2 = (V+dv2) * dt
 
-    f3 = ForceAtVelocity(V+dv2)
+    f3 = ForceAtVelocity(V+(dv2/2))
     a3 = f3 / m
-    dv3 = a3 * (dt/2.)
-    dp3 = (V+dv3) * dt/2.
+    dv3 = a3 * dt
+    dp3 = (V+dv3) * dt
 
     f4 = ForceAtVelocity(V+dv3)
     a4 = f4 / m
     dv4 = a4 * dt
     dp4 = (V+dv4) * dt
+
 
     V += dv1/6. + dv2/3. + dv3/3. + dv4/6.
     P += dp1/6. + dp2/3. + dp3/3. + dp4/6.
@@ -77,14 +78,16 @@ ax1.set_xlabel('X')
 ax1.set_ylabel('Y')
 ax1.set_zlabel('Z')
 a,b,c = [dim.flatten() for dim in np.hsplit(np.array(Peuler), 3)]
-ax1.plot3D(xs=a,ys=b,zs=c, color='blue', label='path')
-
-fig2=plt.figure()
-ax2 = fig2.add_subplot(1,1,1, projection='3d')
-
-
 d,e,f = [dim.flatten() for dim in np.hsplit(np.array(Prk), 3)]
-ax2.plot3D(xs=d,ys=e,zs=f, color='red', label='path')
+ax1.plot3D(xs=a,ys=b,zs=c, color='blue', label='Euler')
+ax1.plot3D(xs=d,ys=e,zs=f, color='red', label='RK')
+
+# fig2=plt.figure()
+# ax2 = fig2.add_subplot(1,1,1, projection='3d')
+#
+#
+#
+# ax2.plot3D(xs=d,ys=e,zs=f, color='red', label='path')
 
 # FLATTEN INS"T MUTATVE SHOULD BE .flat() WHY
 # a.flatten()
