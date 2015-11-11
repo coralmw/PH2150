@@ -97,3 +97,10 @@ ax1.plot3D(xs=d,ys=e,zs=f, color='red', label='RK')
 ax1.legend(loc='lower left')
 
 plt.show()
+
+def funcmod(func):
+    return func
+
+@funcmod
+def hello(name):
+    print name

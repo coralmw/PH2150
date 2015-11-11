@@ -29,7 +29,8 @@ vlist.append(v)
 #The new values are appended to the lists.
 while t<tf:
     # Calculate new values
-    a = -4*x - 0.2*v      # Calculate a using the current x & v
+    a = -4*x - 0.2*v  # Calculate a using the current x & v
+    # this now depends upon the prev velocity
     v = v + a*dt  # Use the current a to update v
     x = x + v*dt  # Use the new v to update x
     t = t + dt    # Advance the time by a step dt
