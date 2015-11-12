@@ -18,6 +18,9 @@ class Vector(object):
         self.v = np.array([x, y, z], dtype=np.float32)
 
     def getAxis(self, dir):
+        '''gets a axis out of {x,y,z}.
+        returns a number.
+        '''
         if dir == 'x':
             return self.v[0]
         elif dir == 'y':
@@ -31,6 +34,7 @@ class Vector(object):
         return self.v.__repr__()
 
     def setAxis(self, dir, val):
+        '''sets the axis {x,y,z} to the given value.'''
         print 'setting', dir, 'to', val
         if dir == 'x':
             self.v[0] = val
@@ -43,14 +47,18 @@ class Vector(object):
 
 
 class PlotFrame(tk.Frame):
+    '''Class represting the plot portion of the main window.
+    Handels displaying the plot, and updating when required.
+    '''
 
     def __init__(self, master=None):
         self.master = master
         tk.Frame.__init__(self, self.master)
 
+        # create the figure to plot into
         self.fig = Figure(figsize=(5,4), dpi=100) # RETINA BRO?
         self.canvas = FigureCanvasTkAgg(self.fig, self)
-        self.canvas.show()
+        self.canvas.show() # and display a placeholder box
 
         self.canvas.get_tk_widget().grid(row = 0, column = 1)
 
@@ -58,21 +66,29 @@ class PlotFrame(tk.Frame):
         self.toolbar.update()
         self.toolbar.grid(row = 7, column = 1)
 
-        self.plotLock = threading.Lock()
+        self.plotLock = threading.Lock() # lock that protects the plot from mixups
 
         self.ax = mplot3d.Axes3D(self.fig)
         self.ax.set_title("Path of charged particle under influence of electric and magnetic fields")
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
-        self.ax.set_zlabel('Z')
+        self.ax.set_zlabel('Z') # set this here to avoid excess time spent in the
+                                # update method
 
 
     def PlotElectronShit(self, params):
-        print params
+        '''This function calculates the path of the electron and displays it.
+        basically renterant, for multithreading.
+        params is a dict, with format deatiled in the input class
+        '''
+        #print params
 
-        E, B = params['E'].v, params['B'].v
+        # extract needed values from the params dict
+        E, B = params['E'].v, params['B'].v # E, B are Vector objects, we just need
+                                            # the numpy arrays
         Particle = params['particle']
-        ParticleE, ParticleRK = Particle.copy(), Particle.copy()
+        ParticleE, ParticleRK = Particle.copy(), Particle.copy() # sep particles for each
+                                                                 # DE method
         T, dt = params['MaxT'], params['dt']
 
         # print E, B, ParticleE, T, dt
@@ -85,7 +101,7 @@ class PlotFrame(tk.Frame):
         # print 'plotted'
         # print Peuler[-1]
         self.plotLock.acquire()
-        self.ax.cla()
+        self.ax.cla() # clear the plot
         if params['Euler']:
             self.ax.plot3D(color='blue', label='Euler', **VectorListToPLOT3D(Peuler))
         if params['RK']:
@@ -94,30 +110,37 @@ class PlotFrame(tk.Frame):
         self.plotLock.release()
 
     def update(self, params):
+        '''Calls PlotElectron in a new thread, so as to not block the UI.'''
         threading.Thread(target=self.PlotElectronShit, args=(params,)).start()
         #self.PlotElectronShit(params)
 
 
 class InputRow(tk.Frame):
+    '''Class representing each row of the input panel.
+    '''
 
-        def __init__(self, master, name, **config):
-            self.master = master
-            self.name = name
-            tk.Frame.__init__(self, self.master)
-            self.label = tk.Label(self, text=name)
-            self.label.grid(row=0, column=0)
-            self.bar = tk.Scale(self, from_=-10, to=10,
-                                orient=tk.HORIZONTAL,
-                                resolution=0.01
-                               )
-            self.bar.config(**config)
-            self.bar.grid(row=0, column=1)
+    def __init__(self, master, name, **config):
+        self.master = master
+        self.name = name
+        tk.Frame.__init__(self, self.master)
+        self.label = tk.Label(self, text=name)
+        self.label.grid(row=0, column=0)
+        self.bar = tk.Scale(self, from_=-10, to=10,
+                            orient=tk.HORIZONTAL,
+                            resolution=0.01
+                           )
+        self.bar.config(**config)
+        self.bar.grid(row=0, column=1)
 
-        def GetScaleBar(self):
-            return self.bar
+    def GetScaleBar(self):
+        return self.bar
 
 
 class InputFrame(tk.Frame):
+    '''Class representing the controls portion of the main window.
+    Contains the main application logic, as all the logic pertains
+    to the buttons being manipulated.
+    '''
 
     def __init__(self, master, updateFunc=None):
         self.master = master
@@ -211,7 +234,7 @@ class InputFrame(tk.Frame):
                                         )
 
         self.ParamDict.update(ParamDict)
-        self.quickUpdateWrap()
+        self.quickUpdateWrap() # do a fastish update
 
 
 class App(tk.Frame):
