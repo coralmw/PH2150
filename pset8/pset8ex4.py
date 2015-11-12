@@ -1,0 +1,242 @@
+import Tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.figure import Figure
+from mpl_toolkits import mplot3d
+from functools import partial
+import numpy as np
+import threading
+
+from DEsolvers import Particle, Euler, RK, VectorListToPLOT3D
+
+
+class Vector(object):
+    '''A class for vectors representing fields.
+    '''
+
+    def __init__(self, x=0, y=0, z=0):
+        # needs to be a float or everything is blank
+        self.v = np.array([x, y, z], dtype=np.float32)
+
+    def getAxis(self, dir):
+        if dir == 'x':
+            return self.v[0]
+        elif dir == 'y':
+            return self.v[1]
+        elif dir == 'z':
+            return self.v[2]
+        else:
+            raise AttributeError('{} not found'.format(key))
+
+    def __repr__(self):
+        return self.v.__repr__()
+
+    def setAxis(self, dir, val):
+        print 'setting', dir, 'to', val
+        if dir == 'x':
+            self.v[0] = val
+        elif dir == 'y':
+            self.v[1] = val
+        elif dir == 'z':
+            self.v[2] = val
+        else:
+            raise AttributeError('{} not found'.format(key))
+
+
+class PlotFrame(tk.Frame):
+
+    def __init__(self, master=None):
+        self.master = master
+        tk.Frame.__init__(self, self.master)
+
+        self.fig = Figure(figsize=(5,4), dpi=100) # RETINA BRO?
+        self.canvas = FigureCanvasTkAgg(self.fig, self)
+        self.canvas.show()
+
+        self.canvas.get_tk_widget().grid(row = 0, column = 1)
+
+        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
+        self.toolbar.update()
+        self.toolbar.grid(row = 7, column = 1)
+
+        self.plotLock = threading.Lock()
+
+        self.ax = mplot3d.Axes3D(self.fig)
+        self.ax.set_title("Path of charged particle under influence of electric and magnetic fields")
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
+
+
+    def PlotElectronShit(self, params):
+        print params
+
+        E, B = params['E'].v, params['B'].v
+        Particle = params['particle']
+        ParticleE, ParticleRK = Particle.copy(), Particle.copy()
+        T, dt = params['MaxT'], params['dt']
+
+        # print E, B, ParticleE, T, dt
+
+        if params['Euler']:
+            Peuler = Euler(E, B, ParticleE, Tmax=T, dt=dt)
+        if params['RK']:
+            Prk = RK(E, B, ParticleRK, Tmax=T, dt=dt)
+
+        # print 'plotted'
+        # print Peuler[-1]
+        self.plotLock.acquire()
+        self.ax.cla()
+        if params['Euler']:
+            self.ax.plot3D(color='blue', label='Euler', **VectorListToPLOT3D(Peuler))
+        if params['RK']:
+            self.ax.plot3D(color='red', label='RK', **VectorListToPLOT3D(Prk))
+        self.canvas.show()
+        self.plotLock.release()
+
+    def update(self, params):
+        threading.Thread(target=self.PlotElectronShit, args=(params,)).start()
+        #self.PlotElectronShit(params)
+
+
+class InputRow(tk.Frame):
+
+        def __init__(self, master, name, **config):
+            self.master = master
+            self.name = name
+            tk.Frame.__init__(self, self.master)
+            self.label = tk.Label(self, text=name)
+            self.label.grid(row=0, column=0)
+            self.bar = tk.Scale(self, from_=-10, to=10,
+                                orient=tk.HORIZONTAL,
+                                resolution=0.01
+                               )
+            self.bar.config(**config)
+            self.bar.grid(row=0, column=1)
+
+        def GetScaleBar(self):
+            return self.bar
+
+
+class InputFrame(tk.Frame):
+
+    def __init__(self, master, updateFunc=None):
+        self.master = master
+        self.updateFunc = updateFunc
+        tk.Frame.__init__(self, self.master)
+
+        self.QuitB = tk.Button(self, text='quit', command=self.quit)
+        self.QuitB.grid(row=0, column=0)
+
+        self.RKEnabled = tk.IntVar()
+        self.EulerEnabled = tk.IntVar()
+
+
+        self.ParamDict = {} # this dict will be passed to the plotting func
+
+        initParams = {
+                  'E':Vector(0., 2., 0.),
+                  'B':Vector(0., 0., 4.),
+                  'V':Vector(20., 10., 2.),
+                  'P':Vector(0., 0., 0.),
+                  'MaxT':6,
+                  'dt':0.01,
+                  'q':5.0,
+                  'm':5.0,
+                 }
+
+        self.AdjustParams = {
+                     'E':Vector(),
+                     'B':Vector(),
+                     'P':Vector(),
+                     'V':Vector(),
+                    }
+
+        for name, VectorDict in self.AdjustParams.iteritems():
+            for dir in ['x', 'y', 'z']:
+                inputRow = InputRow(self, '{}.{}'.format(name, dir))
+                inputRow.GetScaleBar().config(command=partial(self.ScalebarUpdate,
+                                                              (name, dir))
+                                             )
+                if name in initParams:
+                    inputRow.GetScaleBar().set(initParams[name].getAxis(dir))
+                inputRow.grid(column=0)
+
+        self.SclarParams = {'m':0, 'q':5, 'dt':0.001, 'MaxT':5}
+        for i, (name, VectorDict) in enumerate(self.SclarParams.iteritems()):
+            inputRow = InputRow(self, '{}'.format(name))
+            inputRow.GetScaleBar().config(command=partial(self.ScalebarUpdate,
+                                                          (name, None))
+                                         )
+            if name == 'dt':
+                inputRow.GetScaleBar().config(from_=0.0001, to=0.1, resolution=0.0001)
+            if name in initParams:
+                inputRow.GetScaleBar().set(initParams[name])
+            inputRow.grid(row=i+1, column=1)
+
+        self.UpdateB = tk.Button(self, text='update',
+                                 command=self.updateWrap)
+        self.UpdateB.grid(row=12, column=1)
+
+        self.RKbox = tk.Checkbutton(self, text="RK", variable=self.RKEnabled)
+        self.Eulerbox = tk.Checkbutton(self, text="Euler", variable=self.EulerEnabled)
+        self.RKbox.grid(row=5, column=1)
+        self.Eulerbox.grid(row=6, column=1)
+
+    def updateWrap(self):
+        self.ParamDict['RK'] = self.RKEnabled.get()
+        self.ParamDict['Euler'] = self.EulerEnabled.get()
+        self.updateFunc(self.ParamDict)
+
+    def quickUpdateWrap(self):
+        self.ParamDict['RK'] = self.RKEnabled.get()
+        self.ParamDict['Euler'] = self.EulerEnabled.get()
+        dtOld = self.ParamDict['dt']
+        self.ParamDict['dt'] = self.ParamDict['dt'] * 50.
+        self.updateFunc(self.ParamDict)
+        self.ParamDict['dt'] = dtOld
+
+    def ScalebarUpdate(self, nameDirPair, value):
+        name, direction = nameDirPair
+        if direction:
+            self.AdjustParams[name].setAxis(direction, float(value))
+        else:
+            self.SclarParams[name] = float(value)
+
+        ParamDict = self.AdjustParams.copy()
+        ParamDict.update(self.SclarParams)
+        ParamDict['particle'] = Particle(V=self.AdjustParams['V'].v,
+                                         P=self.AdjustParams['P'].v,
+                                         m=self.SclarParams['m'],
+                                         q=self.SclarParams['q']
+                                        )
+
+        self.ParamDict.update(ParamDict)
+        self.quickUpdateWrap()
+
+
+class App(tk.Frame):
+
+    def __init__(self, master):
+        self.master = master
+        tk.Frame.__init__(self, self.master)
+
+        # make the plot frame
+        self.plotFrame = PlotFrame(master=None)
+        self.plotFrame.grid(row=0, column=1)
+
+        # make and position the controls frame
+        # keep the isolation bwteen classes by only providing the update func
+        self.inputFrame = InputFrame(master=None, updateFunc=self.plotFrame.update)
+        self.inputFrame.grid(row=0, column=0)
+
+
+def main():
+    root = tk.Tk()
+    # root.geometry("700x200+200+200")
+    app = App(master=root)
+    app.master.title('Numerical Solutions to the electron\'s path')
+    app.mainloop()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,11 @@
+{
+ "Canvas": "Is what you put things on",
+ "Text": "Text Boxes are awesom, as demonstrated.",
+ "button": "Buttons can contain text or images, and you can associate a Python function or method with each button. When the button is pressed, Tkinter automatically calls that function or method.\n\nThe button can only display text in a single font, but the text may span more than one line. In addition, one of the characters can be underlined, for example to mark a keyboard shortcut. By default, the Tab key can be used to move to a button widget.",
+ "Entry": "An entry box is a single line text box that allows the user to enter text. \nIt supports passwords too.",
+ "message": "Message dialogs",
+ "Pack Manager": "Shoves things into the wallls",
+ "quit": "Quit",
+ "licence":"Licence",
+ "licenceText":"Licence: GPL (I wish), RHUL probably owns this.\nCC Thomas Parks 2015"
+}

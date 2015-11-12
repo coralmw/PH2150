@@ -1,44 +1,57 @@
 import Tkinter as tk
+import tkMessageBox
 from functools import partial
+import simplejson as json
+import os
 
-class DiscrButton(object):
+class AppStrings(object):
+    '''Class represting all the user strings used in the app,
+    to allow for localisation.
+    '''
 
-    def __init__(self, discr, pos, func=None):
-        self.text = discr
-        self.pos = pos
-        self.func = func
+    def __init__(self, loc):
+
+        pypath = os.path.dirname(os.path.abspath(__file__))
+        strPath = os.path.join(pypath, 'discr_{}.json'.format(loc))
+        with open(strPath, 'rb') as f:
+            self.strings = json.loads(f.read())
+
+    def __getattr__(self, attr):
+         return self.strings[attr]
+
+
+# class DiscrButton(object):
+#
+#     def __init__(self, discr, pos, func=None):
+#         self.text = discr
+#         self.pos = pos
+#         self.func = func
 
 class ButtonFrame(tk.Frame):
 
-    def __init__(self, master=None, textboxUpdate=None):
+    def __init__(self, master=None, textboxUpdate=None, strings=None):
+        self.strings = strings
         self.master = master
         tk.Frame.__init__(self, self.master)
 
         self.grid()
         self.updatefunc = textboxUpdate
 
-        self.discriptions = {
-                            'button':("Buttons can contain text or images,"
-                                      " and you can associate a Python function or method with each button."
-                                      " When the button is pressed,"
-                                      " Tkinter automatically calls that function or method.\n\n"
-                                      "The button can only display text in a single font,"
-                                      " but the text may span more than one line."
-                                      " In addition, one of the characters can be underlined,"
-                                      " for example to mark a keyboard shortcut."
-                                      " By default, the Tab key can be used to move to a button widget."),
-                            'Canvas':'Another discr',
-                            'Entry':'11111',
-                            'message':'55555',
-                            'Text':'Text Boxes are awesom',
-                            'Pack Manager':'Is a pain in the butt'
-                            }
+        self.buttonNames = [
+                            'button',
+                            'Canvas',
+                            'Entry',
+                            'message',
+                            'Text',
+                            'Pack Manager',
+                           ]
 
+        self.buttons = []
         self.make_discr_buttons()
 
-
     def make_discr_buttons(self):
-        for button_name, discription in self.discriptions.items():
+        for button_name in self.buttonNames:
+            discription = self.strings.__getattr__(button_name)
             print button_name, discription
             # we use partial function application as lambda's are wrong
             # in this application, as they are late binding.
@@ -46,16 +59,46 @@ class ButtonFrame(tk.Frame):
             button = tk.Button(self, text=button_name,
                                command=partial(self.updatefunc, discription))
             button.grid(column=0)
+            self.buttons.append(button)
+
+        # Maxwidth = max([b.config()['width'] for b in self.buttons])
+        # print [b.config() for b in self.buttons]
+        #
+        # for button in self.buttons:
+        #     button.config(width=Maxwidth)
 
 
+class AppButtonFrame(tk.Frame):
 
+    def __init__(self, master=None, textboxUpdate=None, strings=None):
+        self.strings = strings
+        self.master = master
+        tk.Frame.__init__(self, self.master)
+
+        self.grid()
+
+        self.QuitB = tk.Button(self, text=strings.quit, command=self.quit)
+        self.QuitB.grid(row=0, column=0)
+
+        # create a button to show strings.licence info
+        self.licenceB = tk.Button(
+                                  self,
+                                  text=strings.licence,
+                                  command=partial(
+                                                  tkMessageBox.showinfo,
+                                                  strings.licence,
+                                                  strings.licenceText
+                                                 ),
+                                 )
+        self.licenceB.grid(row=0, column=1)
 
 
 class App(tk.Frame):
 
     StickyAll = tk.W+tk.E+tk.N+tk.S
 
-    def __init__(self, master=None):
+    def __init__(self, master=None, strings=None):
+        self.strings = strings
         self.master = master
         tk.Frame.__init__(self, self.master)
         self.grid()
@@ -71,11 +114,15 @@ class App(tk.Frame):
         self.DiscrText.config(state=tk.DISABLED) # must be returned to normal for
                                                  # insert calls to work
 
-        self.ButtonFrame = ButtonFrame(self, textboxUpdate=self._change_discr_text)
-        self.ButtonFrame.grid(row=0, column=0)
+        # make the buttons, pass _change_discr_text as a callback
+        self.ButtonFrame = ButtonFrame(self,
+                                       textboxUpdate=self._change_discr_text,
+                                       strings=self.strings
+                                      )
+        self.ButtonFrame.grid(row=1, column=0)
 
-        self.QuitB = tk.Button(self, text='Quit', command=self.quit)
-        self.QuitB.grid(row=1, column=0)
+        self.AppButtonFrame = AppButtonFrame(self, strings=self.strings)
+        self.ButtonFrame.grid(row=0, column=0)
 
     def _change_discr_text(self, text):
         '''updates the discr text box. you need to make it editable before inserting
@@ -86,8 +133,14 @@ class App(tk.Frame):
         self.DiscrText.config(state=tk.DISABLED)
 
 
-root = tk.Tk()
-# root.geometry("700x200+200+200")
-app = App(master=root)
-app.master.title('Sample application')
-app.mainloop()
+def main():
+    strings = AppStrings(loc='en')
+    root = tk.Tk()
+    # root.geometry("700x200+200+200")
+    app = App(master=root, strings=strings)
+    app.master.title('Sample application')
+    app.mainloop()
+
+
+if __name__ == '__main__':
+    main()
