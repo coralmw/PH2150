@@ -1,4 +1,6 @@
 import Tkinter as tk
+import tkMessageBox
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 from mpl_toolkits import mplot3d
@@ -136,6 +138,45 @@ class InputRow(tk.Frame):
         '''Gets the underlying scale bar in the frame.'''
         return self.bar
 
+class DiscrMethodsButtons(tk.Frame):
+
+    def __init__(self, master):
+        self.master = master
+        tk.Frame.__init__(self, self.master)
+
+        eulerTxt = """The euler method is a first order NDE solver.
+It\'s error goes with the step size, rather than mush faster in the case of RK.
+We find the tangent line, and step the sol'n down this line."""
+
+        RKtxt = """This method uses a midpoint to cancel out erros from first order
+solves. Devloped in the 1900's by C. Runge and M. W. Kutta. The error goes with the
+step size to the 4th power."""
+
+        self.EluerB = tk.Button(
+                                self,
+                                text='Euler',
+                                command=partial(
+                                                tkMessageBox.showinfo,
+                                                'Euler method',
+                                                eulerTxt,
+                                               ),
+                                )
+        self.EluerB.grid(row=0, column=0)
+
+        self.RKB = tk.Button(
+                              self,
+                              text='Rk',
+                              command=partial(
+                                              tkMessageBox.showinfo,
+                                              'RK method',
+                                              RKtxt,
+                                             ),
+                             )
+        self.RKB.grid(row=0, column=1)
+
+
+
+
 
 class InputFrame(tk.Frame):
     '''Class representing the controls portion of the main window.
@@ -205,6 +246,9 @@ class InputFrame(tk.Frame):
         self.Eulerbox = tk.Checkbutton(self, text="Euler", variable=self.EulerEnabled)
         self.RKbox.grid(row=5, column=1)
         self.Eulerbox.grid(row=6, column=1)
+
+        self.methods = DiscrMethodsButtons(self)
+        self.methods.grid(row=7, column=1)
 
 
     def updateWrap(self):
