@@ -76,7 +76,7 @@ class PlotFrame(tk.Frame):
                                 # update method
 
 
-    def PlotElectronShit(self, params):
+    def PlotElectron(self, params):
         '''This function calculates the path of the electron and displays it.
         basically renterant, for multithreading.
         params is a dict, with format deatiled in the input class
@@ -111,8 +111,8 @@ class PlotFrame(tk.Frame):
 
     def update(self, params):
         '''Calls PlotElectron in a new thread, so as to not block the UI.'''
-        threading.Thread(target=self.PlotElectronShit, args=(params,)).start()
-        #self.PlotElectronShit(params)
+        threading.Thread(target=self.PlotElectron, args=(params,)).start()
+        #self.PlotElectron(params)
 
 
 class InputRow(tk.Frame):
@@ -133,6 +133,7 @@ class InputRow(tk.Frame):
         self.bar.grid(row=0, column=1)
 
     def GetScaleBar(self):
+        '''Gets the underlying scale bar in the frame.'''
         return self.bar
 
 
@@ -205,20 +206,30 @@ class InputFrame(tk.Frame):
         self.RKbox.grid(row=5, column=1)
         self.Eulerbox.grid(row=6, column=1)
 
+
     def updateWrap(self):
+        '''Configures does the final dict updates and passes it to the update function.
+        '''
         self.ParamDict['RK'] = self.RKEnabled.get()
         self.ParamDict['Euler'] = self.EulerEnabled.get()
         self.updateFunc(self.ParamDict)
 
     def quickUpdateWrap(self):
+        '''does the final dict updates and passes it to the update function,
+        but does it for a much larger timestep suitible for live updates.
+        '''
         self.ParamDict['RK'] = self.RKEnabled.get()
         self.ParamDict['Euler'] = self.EulerEnabled.get()
         dtOld = self.ParamDict['dt']
         self.ParamDict['dt'] = self.ParamDict['dt'] * 50.
         self.updateFunc(self.ParamDict)
-        self.ParamDict['dt'] = dtOld
+        self.ParamDict['dt'] = dtOld # restore the old dt after done
 
     def ScalebarUpdate(self, nameDirPair, value):
+        '''Called when a scalebar is modified. Called with the name of the
+        bar by the partial func application above. Stores the new value in the
+        config dict.
+        '''
         name, direction = nameDirPair
         if direction:
             self.AdjustParams[name].setAxis(direction, float(value))
@@ -238,6 +249,9 @@ class InputFrame(tk.Frame):
 
 
 class App(tk.Frame):
+    '''Root class that makes the seperate frames. the input window and the plot
+    communicate only via the update function.
+    '''
 
     def __init__(self, master):
         self.master = master
