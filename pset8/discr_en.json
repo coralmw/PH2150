@@ -1,10 +1,10 @@
 {
- "Canvas": "Is what you put things on",
- "Text": "Text Boxes are awesom, as demonstrated.",
+ "Canvas": "A widget that can diplay graphs and other drawings. Basic buildlig block of other widgets.\nYou can create primatives like lines and rectangles, move them around, and delete them.\n also supported are bitmaps, for texturing and simple display.",
+ "Text": "Text Boxes are awesom, as demonstrated.\nThey can display multiline text strings. You can edit the contents either using the keyborad if the box is not loked (this one is), or by using .inseart methods on the box, or by modifing a ocnnected StringVar object.",
  "button": "Buttons can contain text or images, and you can associate a Python function or method with each button. When the button is pressed, Tkinter automatically calls that function or method.\n\nThe button can only display text in a single font, but the text may span more than one line. In addition, one of the characters can be underlined, for example to mark a keyboard shortcut. By default, the Tab key can be used to move to a button widget.",
- "Entry": "An entry box is a single line text box that allows the user to enter text. \nIt supports passwords too.",
- "message": "Message dialogs",
- "Pack Manager": "Shoves things into the wallls",
+ "Entry": "An entry box is a single line text box that allows the user to enter text. \nIt supports passwords too.\nThe callable is called on every key event, so it is your responsibility to do somthing sensible with the update events.",
+ "message": "Message dialogs diplay a message for the user to react to.",
+ "Pack Manager": "Shoves things as large as possible into a frame. Side by Side is about as complex as the layouts can get. You can use fill/expand to allow the internal widgit to grow with the window around it.",
  "quit": "Quit",
  "licence":"Licence",
  "licenceText":"Licence: GPL (I wish), RHUL probably owns this.\nCC Thomas Parks 2015"

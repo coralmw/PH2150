@@ -20,13 +20,6 @@ class AppStrings(object):
          return self.strings[attr]
 
 
-# class DiscrButton(object):
-#
-#     def __init__(self, discr, pos, func=None):
-#         self.text = discr
-#         self.pos = pos
-#         self.func = func
-
 class ButtonFrame(tk.Frame):
 
     def __init__(self, master=None, textboxUpdate=None, strings=None):
@@ -52,20 +45,13 @@ class ButtonFrame(tk.Frame):
     def make_discr_buttons(self):
         for button_name in self.buttonNames:
             discription = self.strings.__getattr__(button_name)
-            print button_name, discription
             # we use partial function application as lambda's are wrong
             # in this application, as they are late binding.
             # http://docs.python-guide.org/en/latest/writing/gotchas/
             button = tk.Button(self, text=button_name,
                                command=partial(self.updatefunc, discription))
-            button.grid(column=0)
+            button.grid(column=0, sticky=tk.W+tk.E)
             self.buttons.append(button)
-
-        # Maxwidth = max([b.config()['width'] for b in self.buttons])
-        # print [b.config() for b in self.buttons]
-        #
-        # for button in self.buttons:
-        #     button.config(width=Maxwidth)
 
 
 class AppButtonFrame(tk.Frame):
